@@ -1,0 +1,116 @@
+{
+  "id": "draft_1779729693417",
+  "topic": "FlatList performance pitfalls in 2026",
+  "angle": "Three I've personally hit and fixed",
+  "content": "FlatList is still the workhorse of most React Native apps, and in 2026 it mostly works fine on the New Architecture. But I still see the same three mistakes tanking scroll performance in production, and they're almost never caught in dev because simulators are too forgiving.\n\nHere's what I've hit and fixed:\n\n**1. Skipping `getItemLayout` on fixed-height rows**\n\nHad a feed with 800+ items, each exactly 96pt tall. Scrolling was fine in the office on an iPhone 15 Pro, then QA showed me a screen recording from a mid-range Android — white gaps everywhere on fast scroll. The list was measuring every row asynchronously because we never told it the height was fixed.\n\nThree lines fixed it:\n\n```\ngetItemLayout={(_, index) => ({\n  length: 96,\n  offset: 96 * index,\n  index,\n})}\n```\n\nIf your rows have a known height and you're not using this, you're leaving the single biggest FlatList win on the table. The RN docs call it \"a very desirable optimization\" for a reason.\n\n**2. Inline `renderItem` functions — the silent FPS killer**\n\nParent screen had a search bar. Every keystroke updated state. That state change recreated the inline `renderItem` arrow function, which forced FlatList to re-render every visible row. Scroll FPS dropped from 58 to around 35. Users felt the \"stickiness\" but couldn't articulate it.\n\nWrap it in `useCallback`, memoize the row component with `React.memo`, and provide a stable `keyExtractor` (never use `index.toString()` — I learned that one the hard way when items started animating into wrong positions after a sort). Combined, these are maybe 6 extra lines of code for a dramatic difference.\n\n**3. FlatList nested inside ScrollView**\n\nI know, I know — the warning literally tells you not to. But someone on the team needed a profile screen with a scrollable header, some stats cards, and then a long transaction list below. They nested FlatList inside ScrollView, added `nestedScrollEnabled`, and shipped it. The inner list wouldn't scroll reliably on Android, `onEndReached` fired at random times, and memory usage was through the roof because windowing was broken.\n\nThe fix is always structural: push everything above the list into `ListHeaderComponent`, everything below into `ListFooterComponent`. One FlatList, one virtualization context, no warnings, no bugs. It sometimes means refactoring a screen, but the alternative is a list that behaves unpredictably for actual users.\n\nNone of this is new or flashy. But every time I inherit a project, at least two of these are present. Check yours.\n\nWhat's the weirdest FlatList bug you've debugged that turned out to be something trivial?\n\n#ReactNative #MobileDev #FlatList #PerformanceEngineering",
+  "sources": [
+    {
+      "title": "React Native Performance Optimization 2026 Guide - AgileSoftLabs Blog",
+      "url": "https://www.agilesoftlabs.com/blog/2026/03/react-native-performance-optimization"
+    },
+    {
+      "title": "React Native Performance Optimization: The 2026 Playbook | RapidNative",
+      "url": "https://www.rapidnative.com/blogs/react-native-performance-optimization-2026-playbook"
+    },
+    {
+      "title": "How to Optimize React Native App Performance",
+      "url": "https://oneuptime.com/blog/post/2026-02-20-react-native-performance-guide/view"
+    },
+    {
+      "title": "javascript - React-Native FlatList performance problems with large list - Stack Overflow",
+      "url": "https://stackoverflow.com/questions/47678959/react-native-flatlist-performance-problems-with-large-list"
+    },
+    {
+      "title": "Ditch FlatList for these 5 React Native alternatives | Sourav S. posted on the topic | LinkedIn",
+      "url": "https://www.linkedin.com/posts/souravsadhukhan_mobiledevelopment-reactnative-performance-activity-7353627442915225600-Dk7s"
+    },
+    {
+      "title": "Optimizing FlatList Configuration - React Native",
+      "url": "https://reactnative.dev/docs/optimizing-flatlist-configuration"
+    },
+    {
+      "title": "How to Implement FlatList Optimization for Large Lists in React Native",
+      "url": "https://oneuptime.com/blog/post/2026-01-15-react-native-flatlist-optimization/view"
+    },
+    {
+      "title": "A guide to optimizing Flatlists in React Native. | Obytes",
+      "url": "https://www.obytes.com/blog/a-guide-to-optimizing-flatlists-in-react-native"
+    },
+    {
+      "title": "💡 React Native Tip: Optimizing List Rendering with FlatList When working with large lists in React Native, performance can quickly become a bottleneck. The FlatList component is a powerful tool to… | Leonardo Andrade | 47 comments",
+      "url": "https://www.linkedin.com/posts/leonardohandrade_react-native-tip-optimizing-list-rendering-activity-7280740755743068160-c94a"
+    },
+    {
+      "title": "Optimizing Flatlist Configuration | React Native Vega Reference",
+      "url": "https://developer.amazon.com/docs/react-native-vega/0.72/optimizing-flatlist-configuration.html"
+    },
+    {
+      "title": "A look into the new architecture on RNW 0.76 and 0.77! React Native",
+      "url": "https://devblogs.microsoft.com/react-native/2025-01-29-new-architecture-on-0-76-0-77"
+    },
+    {
+      "title": "New Architecture is here - React Native",
+      "url": "https://reactnative.dev/blog/2024/10/23/the-new-architecture-is-here"
+    },
+    {
+      "title": "React Native New Architecture Migration Guide (2026): Step-by-Step",
+      "url": "https://www.agilesoftlabs.com/blog/2026/03/react-native-new-architecture-migration"
+    },
+    {
+      "title": "React Native New Architecture: Key Performance Boosts",
+      "url": "https://swmansion.com/blog/react-native-new-architecture-key-performance-boosts-4ce68cc3cc9f"
+    },
+    {
+      "title": "How does React Native's New Architecture affect performance? - DEV Community",
+      "url": "https://dev.to/amazonappdev/how-does-react-natives-new-architecture-affect-performance-1dkf"
+    },
+    {
+      "title": "Why React Native FlashList Crushes FlatList Performance Every Single Time",
+      "url": "https://medium.com/@vinayaksaubhri/why-react-native-flashlist-crushes-flatlist-performance-every-single-time-099fcee29eec"
+    },
+    {
+      "title": "React Native Masters-4: Optimizing FlatList Performance | by ismail harmanda | Stackademic",
+      "url": "https://blog.stackademic.com/react-native-masters-4-optimizing-flatlist-performance-5204ab6751cf"
+    },
+    {
+      "title": "FlatList performance: Scrolling is buggy and not smooth when virtualization is enabled · Issue #1337 · necolas/react-native-web · GitHub",
+      "url": "https://github.com/necolas/react-native-web/issues/1337"
+    },
+    {
+      "title": "FlatList is killing the performance of your app - YouTube",
+      "url": "https://www.youtube.com/watch?v=1l5Pn4VbnO4"
+    },
+    {
+      "title": "Understand onViewableItemsChanged in FlatList | RY 's Blog",
+      "url": "https://suelan.github.io/2020/01/21/onViewableItemsChanged"
+    },
+    {
+      "title": "React Native Modal feels laggy with FlatList inside (Expo SDK 53) : r/reactnative",
+      "url": "https://www.reddit.com/r/reactnative/comments/1nl4xgc/react_native_modal_feels_laggy_with_flatlist"
+    },
+    {
+      "title": "javascript - React-Native flatlist VirtualizedLists should never be nested inside plain ScrollViews - Stack Overflow",
+      "url": "https://stackoverflow.com/questions/67990849/react-native-flatlist-virtualizedlists-should-never-be-nested-inside-plain-scrol"
+    },
+    {
+      "title": "Nested ScrollViews can be Tricky in React Native! How to solve? - DEV Community",
+      "url": "https://dev.to/swarnaliroy94/nested-scrollviews-can-be-tricky-in-react-native-how-to-solve-4f5a"
+    },
+    {
+      "title": "Nested Flatlist in ScrollView doesn't work with TextInput focused · Issue #27244 · facebook/react-native · GitHub",
+      "url": "https://github.com/facebook/react-native/issues/27244"
+    },
+    {
+      "title": "react native - Nested FlatList with the same scroll direction not scrolling - Stack Overflow",
+      "url": "https://stackoverflow.com/questions/60498103/nested-flatlist-with-the-same-scroll-direction-not-scrolling"
+    },
+    {
+      "title": "ScrollView · React Native",
+      "url": "https://reactnative.dev/docs/scrollview"
+    }
+  ],
+  "status": "pending",
+  "createdAt": "2026-05-25T17:21:33.417Z",
+  "updatedAt": "2026-05-25T17:21:33.417Z",
+  "tokensUsed": 26657
+}
