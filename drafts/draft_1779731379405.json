@@ -1,0 +1,120 @@
+{
+  "id": "draft_1779731379405",
+  "topic": "Why I stopped using Redux in new React Native projects",
+  "angle": "what I use instead and when Redux still wins",
+  "content": "I stopped adding Redux to new React Native projects about 18 months ago. Haven't regretted it once.\n\nThe turning point: I realized most of the state I was putting in Redux wasn't even client state. It was server state. I was manually caching, normalizing, and re-fetching API responses with thunks. TanStack Query took over. Deleted roughly 200 lines of reducers and action creators overnight.\n\nFor actual client state (auth token, theme, active filters, a draft in progress), Zustand covers it in one file. No Provider. No `dispatch`. No action type constants.\n\n```ts\nconst useAuth = create((set) => ({\n  token: null,\n  setToken: (t) => set({ token: t }),\n  logout: () => set({ token: null }),\n}));\n```\n\nThat's the whole store. Import `useAuth` and go.\n\nWhat surprised me: how often I need state outside the React tree. Push notification handlers. Axios interceptors. Navigation guards. Zustand's `store.getState()` and `store.setState()` work without a Provider. Redux was always awkward for this.\n\nBundle size: Zustand ~1.2KB gzipped. Redux Toolkit + React-Redux ~13KB. On Hermes, every kilobyte counts toward startup.\n\nRedux still makes sense for large teams. RTK Query is solid, and slices keep 10+ engineers writing predictable code. That consistency has real dollar value. If your team already knows Redux and time-travel debugging is part of your workflow, don't rewrite.\n\nBut for a new RN project with 1–5 devs? Zustand + TanStack Query is my default. Smaller API surface, simpler mental model, less code between me and shipping.\n\nWhat dependency did you replace in your React Native setup that made everything simpler?\n\n#reactnative #mobiledev #javascript #typescript",
+  "sources": [
+    {
+      "title": "Mastering React Native State Management: Redux vs Recoil vs Zustand",
+      "url": "https://teo.dk/en/mastering-state-management-in-react-native-redux-vs-recoil-vs-zustand"
+    },
+    {
+      "title": "React: Context API vs Zustand vs Redux",
+      "url": "https://medium.com/@codenova/react-context-api-vs-zustand-vs-redux-472d05afb6ee"
+    },
+    {
+      "title": "State Management Trends in React 2025: When to Use Zustand, Jotai, XState, or Something Else - Makers' Den — Makers Den",
+      "url": "https://makersden.io/blog/react-state-management-in-2025"
+    },
+    {
+      "title": "Comparison - Zustand",
+      "url": "https://zustand.docs.pmnd.rs/learn/getting-started/comparison"
+    },
+    {
+      "title": "When to use Store (Zustand) vs Context vs Redux ? : r/react - Reddit",
+      "url": "https://www.reddit.com/r/react/comments/1g6ci6n/when_to_use_store_zustand_vs_context_vs_redux"
+    },
+    {
+      "title": "Mastering State Management in React Native Apps in 2025: A Comprehensive Guide",
+      "url": "https://medium.com/@sharmapraveen91/mastering-state-management-in-react-native-apps-in-2025-a-comprehensive-guide-5399b6693dc1"
+    },
+    {
+      "title": "React State Management in 2025: What You Actually Need",
+      "url": "https://www.developerway.com/posts/react-state-management-2025"
+    },
+    {
+      "title": "ReactJS State Management in 2025: Best Options for Scaling Apps - Makers' Den — Makers Den",
+      "url": "https://makersden.io/blog/reactjs-state-management-in-2025-best-options-for-scaling-apps"
+    },
+    {
+      "title": "State Management in React 2025: Exploring Modern Solutions - DEV Community",
+      "url": "https://dev.to/rayan2228/state-management-in-react-2025-exploring-modern-solutions-5f9c"
+    },
+    {
+      "title": "State Management in 2025: When to Use Context, Redux, Zustand, or Jotai - DEV Community",
+      "url": "https://dev.to/hijazi313/state-management-in-2025-when-to-use-context-redux-zustand-or-jotai-2d2k"
+    },
+    {
+      "title": "Zustand vs Jotai: Choosing the Right State Manager for Your React App",
+      "url": "https://blog.openreplay.com/zustand-jotai-react-state-manager"
+    },
+    {
+      "title": "Zustand vs. Redux Toolkit vs. Jotai | Better Stack Community",
+      "url": "https://betterstack.com/community/guides/scaling-nodejs/zustand-vs-redux-toolkit-vs-jotai"
+    },
+    {
+      "title": "Comparison — Jotai, primitive and flexible state management for React",
+      "url": "https://jotai.org/docs/basics/comparison"
+    },
+    {
+      "title": "Comparing Redux with Zustand for state management in React",
+      "url": "https://greenonsoftware.com/articles/libraries/comparing-redux-with-zustand-for-state-management-in-react"
+    },
+    {
+      "title": "Zustand vs Redux Toolkit: Bundle Size 60% Smaller (Real Benchmark Data)",
+      "url": "https://www.wellally.tech/blog/zustand-vs-redux-react-native-health-apps"
+    },
+    {
+      "title": "Zustand vs Redux Toolkit - Picking React State",
+      "url": "https://theroadtoenterprise.com/blog/zustand-vs-redux-toolkit"
+    },
+    {
+      "title": "Redux vs Zustand: Choosing the Right React State Manager | Syncfusion Blogs",
+      "url": "https://www.syncfusion.com/blogs/post/redux-vs-zustand-react-state-management"
+    },
+    {
+      "title": "Frontend System Design: Redux Toolkit vs Zustand vs Jotai - DEV Community",
+      "url": "https://dev.to/zeeshanali0704/frontend-system-design-redux-toolkit-vs-zustand-vs-jotai-1npn"
+    },
+    {
+      "title": "Mastering State Management in React Native with Zustand: A Modern Guide | by James Mogambi .N | JavaScript in Plain English",
+      "url": "https://javascript.plainenglish.io/mastering-state-management-in-react-native-with-zustand-a-modern-guide-d6fb2764cdcb"
+    },
+    {
+      "title": "Using Zustand in React Native: Lightweight State Management Done Right – Djamware",
+      "url": "https://www.djamware.com/post/using-zustand-in-react-native-lightweight-state-management-done-right"
+    },
+    {
+      "title": "Simplifying State Management in React Native with Zustand - DEV Community",
+      "url": "https://dev.to/ajmal_hasan/simplifying-state-management-in-react-native-with-zustand-41f2"
+    },
+    {
+      "title": "I Migrated a React Native App from Redux to Zustand - DEV Community",
+      "url": "https://dev.to/likhit/i-migrated-a-react-native-app-from-redux-to-zustand-4cdo"
+    },
+    {
+      "title": "React Native Performance Optimization 2026 Guide - AgileSoftLabs",
+      "url": "https://www.agilesoftlabs.com/blog/2026/03/react-native-performance-optimization"
+    },
+    {
+      "title": "How to Use Hermes Engine for Better React Native Performance",
+      "url": "https://oneuptime.com/blog/post/2026-01-15-react-native-hermes-engine/view"
+    },
+    {
+      "title": "Understanding Redux Toolkit: Simplifying State Management for Modern Web Apps - Zimetrics",
+      "url": "https://zimetrics.com/insights/understanding-redux-toolkit-simplifying-state-management-for-modern-web-apps"
+    },
+    {
+      "title": "Why I Stopped Using Redux (and What I Use Instead in 2025) | by TechSam | JavaScript in Plain English",
+      "url": "https://javascript.plainenglish.io/why-i-stopped-using-redux-and-what-i-use-instead-in-2025-6c47629d40ec"
+    },
+    {
+      "title": "Is Redux no longer popular? : r/reactjs - Reddit",
+      "url": "https://www.reddit.com/r/reactjs/comments/1jlkcsq/is_redux_no_longer_popular"
+    }
+  ],
+  "status": "pending",
+  "createdAt": "2026-05-25T17:49:39.405Z",
+  "updatedAt": "2026-05-25T17:49:39.405Z",
+  "tokensUsed": 46502
+}
